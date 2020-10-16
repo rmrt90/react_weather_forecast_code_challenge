@@ -1,17 +1,18 @@
-import React, { useState } from "react";
-import TextField from "@material-ui/core/TextField";
-import Autocomplete from "@material-ui/lab/Autocomplete";
-import "./App.css";
-import { Button, Card, Container, Grid } from "@material-ui/core";
+import React, { useState } from 'react';
+import TextField from '@material-ui/core/TextField';
+import Autocomplete from '@material-ui/lab/Autocomplete';
+import './App.css';
+import { Button, Card, Container, Grid } from '@material-ui/core';
 import {
   MuiPickersUtilsProvider,
   KeyboardDatePicker,
-} from "@material-ui/pickers";
+} from '@material-ui/pickers';
 
-import DateFnsUtils from "@date-io/date-fns";
-import axios from "axios";
+import DateFnsUtils from '@date-io/date-fns';
+import axios from 'axios';
+import cities from './cities';
 
-function App() {
+function App(): JSX.Element {
   interface City {
     title: string;
     location_type: string;
@@ -38,47 +39,47 @@ function App() {
   }
 
   const [selectedCity, setSelectedCity] = useState<City>();
-  const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [weatherData, setWeatherData] = useState<[WeatherData]>();
 
-  const handleDateChange = (date: Date | null) => {
-    setSelectedDate(date);
+  const handleDateChange = (date: Date | null): void => {
+    if (date) {
+      setSelectedDate(date);
+    }
   };
 
-  const handleCityChange = (city: any | null) => {
-    setSelectedCity(city);
+  const handleCityChange = (city: City | null): void => {
+    if (city) {
+      setSelectedCity(city);
+    }
   };
 
-  const getWeatherData = () => {
-    !!selectedCity &&
-      !!selectedDate &&
+  const getWeatherData = (): void => {
+    if (selectedCity && selectedDate) {
       axios
         .get(
-          "http://localhost:8080/api/getWeatherData/" +
-            selectedCity.woeid +
-            "/" +
-            selectedDate.getFullYear().toString() +
-            "/" +
-            (selectedDate.getMonth() + 1).toString() +
-            "/" +
-            selectedDate.getDate().toString()
+          `http://localhost:8080/api/getWeatherData/${
+            selectedCity.woeid
+          }/${selectedDate.getFullYear().toString()}/${(
+            selectedDate.getMonth() + 1
+          ).toString()}/${selectedDate.getDate().toString()}`
         )
         .then((response) => {
-          console.log(response);
           setWeatherData([response.data[0]]);
         });
+    }
   };
 
-  const getTodayWeatherData = () => {
-    !!selectedCity &&
+  const getTodayWeatherData = (): void => {
+    if (selectedCity) {
       axios
         .get(
-          "http://localhost:8080/api/getTodayWeatherData/" + selectedCity.woeid
+          `http://localhost:8080/api/getTodayWeatherData/${selectedCity.woeid}`
         )
         .then((response) => {
-          console.log(response);
           setWeatherData(response.data.consolidated_weather);
         });
+    }
   };
 
   return (
@@ -88,19 +89,20 @@ function App() {
           <h1>Weather Forecast</h1>
         </header>
         <body className="App-body">
-          <Container style={{ padding: "5vh", backgroundColor: "white" }}>
+          <Container style={{ padding: '5vh', backgroundColor: 'white' }}>
             <Grid container spacing={3}>
               <Grid item sm={12} md={12}>
                 <h1>Select a city and a date</h1>
               </Grid>
-              <Grid item sm={12} md={4} style={{ display: "ruby" }}>
+              <Grid item sm={12} md={4} style={{ display: 'ruby' }}>
                 <Autocomplete
                   id="combo-box-demo"
                   options={cities}
-                  getOptionLabel={(option) => option.title}
-                  onChange={(event, value) => handleCityChange(value)}
-                  style={{ width: 225, marginTop: "10px" }}
-                  renderInput={(params) => (
+                  getOptionLabel={(option): string => option.title}
+                  onChange={(event, value): void => handleCityChange(value)}
+                  style={{ width: 225, marginTop: '10px' }}
+                  renderInput={(params): React.ReactNode => (
+                    // eslint-disable-next-line react/jsx-props-no-spreading
                     <TextField {...params} label="City" variant="outlined" />
                   )}
                 />
@@ -116,7 +118,7 @@ function App() {
                   value={selectedDate}
                   onChange={handleDateChange}
                   KeyboardButtonProps={{
-                    "aria-label": "change date",
+                    'aria-label': 'change date',
                   }}
                 />
               </Grid>
@@ -126,7 +128,7 @@ function App() {
                   color="primary"
                   onClick={getWeatherData}
                 >
-                  Selected Date's weather
+                  Selected Date&apos;s weather
                 </Button>
                 <br />
                 <br />
@@ -135,22 +137,18 @@ function App() {
                   color="secondary"
                   onClick={getTodayWeatherData}
                 >
-                  Today's weather
+                  Today&apos;s weather
                 </Button>
               </Grid>
               {!!weatherData &&
                 weatherData.length > 0 &&
                 weatherData.map((wData: WeatherData) => (
                   <Grid item md={4}>
-                    <Card style={{ textAlign: "center" }}>
+                    <Card style={{ textAlign: 'center' }}>
                       <h2>{wData.applicable_date}</h2>
                       <img
-                        src={
-                          "https://www.metaweather.com/static/img/weather/png/64/" +
-                          wData.weather_state_abbr +
-                          ".png"
-                        }
-                        alt={""}
+                        src={`https://www.metaweather.com/static/img/weather/png/64/${wData.weather_state_abbr}.png`}
+                        alt=""
                       />
                       <h2>{wData.weather_state_name}</h2>
                       Max Temp: {wData.max_temp} <br />
@@ -170,1070 +168,5 @@ function App() {
     </MuiPickersUtilsProvider>
   );
 }
-
-const cities = [
-  {
-    title: "San Francisco",
-    location_type: "City",
-    woeid: 2487956,
-    latt_long: "37.777119, -122.41964",
-  },
-  {
-    title: "Philadelphia",
-    location_type: "City",
-    woeid: 2471217,
-    latt_long: "39.952271,-75.162369",
-  },
-  {
-    title: "Manchester",
-    location_type: "City",
-    woeid: 28218,
-    latt_long: "53.479599,-2.248810",
-  },
-  {
-    title: "Birmingham",
-    location_type: "City",
-    woeid: 12723,
-    latt_long: "52.478630,-1.908450",
-  },
-  {
-    title: "Los Angeles",
-    location_type: "City",
-    woeid: 2442047,
-    latt_long: "34.053490,-118.245323",
-  },
-  {
-    title: "Chicago",
-    location_type: "City",
-    woeid: 2379574,
-    latt_long: "41.884151,-87.632408",
-  },
-  {
-    title: "Osaka",
-    location_type: "City",
-    woeid: 15015370,
-    latt_long: "34.6775,135.5032",
-  },
-  {
-    title: "Mumbai",
-    location_type: "City",
-    woeid: 12586539,
-    latt_long: "19.076191,72.875877",
-  },
-  {
-    title: "Glasgow",
-    location_type: "City",
-    woeid: 21125,
-    latt_long: "55.857800,-4.242510",
-  },
-  {
-    title: "Amsterdam",
-    location_type: "City",
-    woeid: 727232,
-    latt_long: "52.373119,4.893190",
-  },
-  {
-    title: "Johannesburg",
-    location_type: "City",
-    woeid: 1582504,
-    latt_long: "-26.204941,28.040030",
-  },
-  {
-    title: "Rio de Janeiro",
-    location_type: "City",
-    woeid: 455825,
-    latt_long: "-22.976730,-43.195080",
-  },
-  {
-    title: "Shanghai",
-    location_type: "City",
-    woeid: 2151849,
-    latt_long: "31.247709,121.472618",
-  },
-  {
-    title: "Jakarta",
-    location_type: "City",
-    woeid: 1047378,
-    latt_long: "-6.171440,106.827820",
-  },
-  {
-    title: "São Paulo",
-    location_type: "City",
-    woeid: 455827,
-    latt_long: "-23.562880,-46.654659",
-  },
-  {
-    title: "San Diego",
-    location_type: "City",
-    woeid: 2487889,
-    latt_long: "32.715691,-117.161720",
-  },
-  {
-    title: "San Jose",
-    location_type: "City",
-    woeid: 2488042,
-    latt_long: "37.338581,-121.885567",
-  },
-  {
-    title: "Dallas",
-    location_type: "City",
-    woeid: 2388929,
-    latt_long: "32.778149,-96.795403",
-  },
-  {
-    title: "Indianapolis",
-    location_type: "City",
-    woeid: 2427032,
-    latt_long: "39.766911,-86.149963",
-  },
-  {
-    title: "San Antonio",
-    location_type: "City",
-    woeid: 2487796,
-    latt_long: "29.424580,-98.494614",
-  },
-  {
-    title: "Montréal",
-    location_type: "City",
-    woeid: 3534,
-    latt_long: "45.512402,-73.554680",
-  },
-  {
-    title: "Jacksonville",
-    location_type: "City",
-    woeid: 2428344,
-    latt_long: "30.331381,-81.655800",
-  },
-  {
-    title: "Austin",
-    location_type: "City",
-    woeid: 2357536,
-    latt_long: "30.267599,-97.742981",
-  },
-  {
-    title: "Madrid",
-    location_type: "City",
-    woeid: 766273,
-    latt_long: "40.420300,-3.705770",
-  },
-  {
-    title: "Guangzhou",
-    location_type: "City",
-    woeid: 2161838,
-    latt_long: "23.107389,113.267616",
-  },
-  {
-    title: "Washington DC",
-    location_type: "City",
-    woeid: 2514815,
-    latt_long: "38.899101,-77.028999",
-  },
-  {
-    title: "Paris",
-    location_type: "City",
-    woeid: 615702,
-    latt_long: "48.856930,2.341200",
-  },
-  {
-    title: "Brisbane",
-    location_type: "City",
-    woeid: 1100661,
-    latt_long: "-27.468880,153.022827",
-  },
-  {
-    title: "Milwaukee",
-    location_type: "City",
-    woeid: 2451822,
-    latt_long: "43.041809,-87.906837",
-  },
-  {
-    title: "Bradford",
-    location_type: "City",
-    woeid: 13527,
-    latt_long: "53.795731,-1.758300",
-  },
-  {
-    title: "Wakefield",
-    location_type: "City",
-    woeid: 38952,
-    latt_long: "53.677631,-1.509510",
-  },
-  {
-    title: "Istanbul",
-    location_type: "City",
-    woeid: 2344116,
-    latt_long: "41.040852,28.986179",
-  },
-  {
-    title: "El Paso",
-    location_type: "City",
-    woeid: 2397816,
-    latt_long: "31.759159,-106.487488",
-  },
-  {
-    title: "Seattle",
-    location_type: "City",
-    woeid: 2490383,
-    latt_long: "47.603561,-122.329437",
-  },
-  {
-    title: "Baltimore",
-    location_type: "City",
-    woeid: 2358820,
-    latt_long: "39.290550,-76.609596",
-  },
-  {
-    title: "Las Vegas",
-    location_type: "City",
-    woeid: 2436704,
-    latt_long: "36.171909,-115.139969",
-  },
-  {
-    title: "Buenos Aires",
-    location_type: "City",
-    woeid: 468739,
-    latt_long: "-34.608521,-58.373539",
-  },
-  {
-    title: "Nashville",
-    location_type: "City",
-    woeid: 2457170,
-    latt_long: "36.167839,-86.778160",
-  },
-  {
-    title: "Karachi",
-    location_type: "City",
-    woeid: 2211096,
-    latt_long: "24.889780,67.028511",
-  },
-  {
-    title: "Hamburg",
-    location_type: "City",
-    woeid: 656958,
-    latt_long: "53.553341,9.992450",
-  },
-  {
-    title: "Dubai",
-    location_type: "City",
-    woeid: 1940345,
-    latt_long: "25.269440,55.308651",
-  },
-  {
-    title: "Adelaide",
-    location_type: "City",
-    woeid: 1099805,
-    latt_long: "-34.926102,138.599884",
-  },
-  {
-    title: "Charlotte",
-    location_type: "City",
-    woeid: 2378426,
-    latt_long: "35.222500,-80.837540",
-  },
-  {
-    title: "Barcelona",
-    location_type: "City",
-    woeid: 753692,
-    latt_long: "41.385578,2.168740",
-  },
-  {
-    title: "Portland",
-    location_type: "City",
-    woeid: 2475687,
-    latt_long: "45.511791,-122.675629",
-  },
-  {
-    title: "Oklahoma City",
-    location_type: "City",
-    woeid: 2464592,
-    latt_long: "35.472000,-97.520348",
-  },
-  {
-    title: "Cardiff",
-    location_type: "City",
-    woeid: 15127,
-    latt_long: "51.481251,-3.180730",
-  },
-  {
-    title: "Kolkata",
-    location_type: "City",
-    woeid: 2295386,
-    latt_long: "22.549940,88.371582",
-  },
-  {
-    title: "Cairo",
-    location_type: "City",
-    woeid: 1521894,
-    latt_long: "30.049950,31.248600",
-  },
-  {
-    title: "Virginia Beach",
-    location_type: "City",
-    woeid: 2512636,
-    latt_long: "36.755020,-76.059196",
-  },
-  {
-    title: "Kinshasa",
-    location_type: "City",
-    woeid: 1290062,
-    latt_long: "-4.316420,15.298340",
-  },
-  {
-    title: "Colorado Springs",
-    location_type: "City",
-    woeid: 2383489,
-    latt_long: "38.833450,-104.821808",
-  },
-  {
-    title: "Auckland",
-    location_type: "City",
-    woeid: 2348079,
-    latt_long: "-36.884109,174.770416",
-  },
-  {
-    title: "Dongguan",
-    location_type: "City",
-    woeid: 2161842,
-    latt_long: "23.046499,113.735817",
-  },
-  {
-    title: "Sacramento",
-    location_type: "City",
-    woeid: 2486340,
-    latt_long: "38.579060,-121.491013",
-  },
-  {
-    title: "Kansas City",
-    location_type: "Region / State / Province",
-    woeid: 2430683,
-    latt_long: "39.102951,-94.583061",
-  },
-  {
-    title: "Bangkok",
-    location_type: "City",
-    woeid: 1225448,
-    latt_long: "13.753330,100.504822",
-  },
-  {
-    title: "Mesa",
-    location_type: "City",
-    woeid: 2449808,
-    latt_long: "33.417042,-111.831459",
-  },
-  {
-    title: "Atlanta",
-    location_type: "City",
-    woeid: 2357024,
-    latt_long: "33.748310,-84.391113",
-  },
-  {
-    title: "Bangalore",
-    location_type: "City",
-    woeid: 2295420,
-    latt_long: "12.955800,77.620979",
-  },
-  {
-    title: "Lima",
-    location_type: "City",
-    woeid: 418440,
-    latt_long: "-12.043600,-77.021217",
-  },
-  {
-    title: "Albuquerque",
-    location_type: "City",
-    woeid: 2352824,
-    latt_long: "35.084179,-106.648643",
-  },
-  {
-    title: "Lagos",
-    location_type: "City",
-    woeid: 1398823,
-    latt_long: "6.439180,3.423480",
-  },
-  {
-    title: "Long Beach",
-    location_type: "City",
-    woeid: 2441472,
-    latt_long: "33.766720,-118.192398",
-  },
-  {
-    title: "Omaha",
-    location_type: "City",
-    woeid: 2465512,
-    latt_long: "41.260689,-95.940590",
-  },
-  {
-    title: "Raleigh",
-    location_type: "City",
-    woeid: 2478307,
-    latt_long: "35.785511,-78.642670",
-  },
-  {
-    title: "Miami",
-    location_type: "City",
-    woeid: 2450022,
-    latt_long: "25.728979,-80.237419",
-  },
-  {
-    title: "Casablanca",
-    location_type: "City",
-    woeid: 1532755,
-    latt_long: "33.596611,-7.619340",
-  },
-  {
-    title: "Singapore",
-    location_type: "City",
-    woeid: 1062617,
-    latt_long: "1.293780,103.853256",
-  },
-  {
-    title: "Yokohama",
-    location_type: "City",
-    woeid: 1118550,
-    latt_long: "35.452702,139.595123",
-  },
-  {
-    title: "Nairobi",
-    location_type: "City",
-    woeid: 1528488,
-    latt_long: "-1.270200,36.804138",
-  },
-  {
-    title: "Tianjin",
-    location_type: "City",
-    woeid: 2159908,
-    latt_long: "39.128399,117.185112",
-  },
-  {
-    title: "Dhaka",
-    location_type: "City",
-    woeid: 1915035,
-    latt_long: "23.709801,90.407112",
-  },
-  {
-    title: "Pyongyang",
-    location_type: "City",
-    woeid: 1079132,
-    latt_long: "39.014221,125.776299",
-  },
-  {
-    title: "Addis Ababa",
-    location_type: "City",
-    woeid: 1313090,
-    latt_long: "9.022730,38.746792",
-  },
-  {
-    title: "Hyderabad",
-    location_type: "City",
-    woeid: 2295414,
-    latt_long: "17.508829,78.434578",
-  },
-  {
-    title: "Santa Cruz",
-    location_type: "City",
-    woeid: 2488853,
-    latt_long: "36.974018,-122.030952",
-  },
-  {
-    title: "Budapest",
-    location_type: "City",
-    woeid: 804365,
-    latt_long: "47.506222,19.064819",
-  },
-  {
-    title: "Milan",
-    location_type: "City",
-    woeid: 718345,
-    latt_long: "45.468941,9.181030",
-  },
-  {
-    title: "Cambridge",
-    location_type: "City",
-    woeid: 14979,
-    latt_long: "52.209702,0.111420",
-  },
-  {
-    title: "Vienna",
-    location_type: "City",
-    woeid: 551801,
-    latt_long: "48.202541,16.368799",
-  },
-  {
-    title: "Riyadh",
-    location_type: "City",
-    woeid: 1939753,
-    latt_long: "24.647320,46.714581",
-  },
-  {
-    title: "Damascus",
-    location_type: "City",
-    woeid: 1947122,
-    latt_long: "33.519211,36.313309",
-  },
-  {
-    title: "Ankara",
-    location_type: "City",
-    woeid: 2343732,
-    latt_long: "39.942928,32.860481",
-  },
-  {
-    title: "Santiago",
-    location_type: "City",
-    woeid: 349859,
-    latt_long: "-33.463039,-70.647942",
-  },
-  {
-    title: "Birmingham",
-    location_type: "City",
-    woeid: 2364559,
-    latt_long: "33.520290,-86.811501",
-  },
-  {
-    title: "Baghdad",
-    location_type: "City",
-    woeid: 1979455,
-    latt_long: "33.338612,44.393890",
-  },
-  {
-    title: "Anchorage",
-    location_type: "City",
-    woeid: 2354490,
-    latt_long: "61.217548,-149.858383",
-  },
-  {
-    title: "Athens",
-    location_type: "City",
-    woeid: 946738,
-    latt_long: "37.976151,23.736410",
-  },
-  {
-    title: "Santorini",
-    location_type: "City",
-    woeid: 56558361,
-    latt_long: "36.406651,25.456530",
-  },
-  {
-    title: "Reykjavík",
-    location_type: "City",
-    woeid: 980389,
-    latt_long: "64.137383,-21.902479",
-  },
-  {
-    title: "Sofia",
-    location_type: "City",
-    woeid: 839722,
-    latt_long: "42.697079,23.324551",
-  },
-  {
-    title: "Prague",
-    location_type: "City",
-    woeid: 796597,
-    latt_long: "50.079079,14.433220",
-  },
-  {
-    title: "Zagreb",
-    location_type: "City",
-    woeid: 851128,
-    latt_long: "45.807259,15.967600",
-  },
-  {
-    title: "Copenhagen",
-    location_type: "City",
-    woeid: 554890,
-    latt_long: "55.676311,12.569350",
-  },
-  {
-    title: "Bucharest",
-    location_type: "City",
-    woeid: 868274,
-    latt_long: "44.434200,26.102970",
-  },
-  {
-    title: "Naples",
-    location_type: "City",
-    woeid: 719258,
-    latt_long: "40.852268,14.238990",
-  },
-  {
-    title: "Warsaw",
-    location_type: "City",
-    woeid: 523920,
-    latt_long: "52.235352,21.009390",
-  },
-  {
-    title: "Wichita",
-    location_type: "City",
-    woeid: 2520077,
-    latt_long: "37.686981,-97.335579",
-  },
-  {
-    title: "New Orleans",
-    location_type: "City",
-    woeid: 2458833,
-    latt_long: "29.953690,-90.077713",
-  },
-  {
-    title: "Calgary",
-    location_type: "City",
-    woeid: 8775,
-    latt_long: "51.013371,-114.070877",
-  },
-  {
-    title: "Manila",
-    location_type: "City",
-    woeid: 1199477,
-    latt_long: "14.609620,121.005890",
-  },
-  {
-    title: "Vancouver",
-    location_type: "City",
-    woeid: 9807,
-    latt_long: "49.267239,-123.145264",
-  },
-  {
-    title: "Maracaibo",
-    location_type: "City",
-    woeid: 395270,
-    latt_long: "10.734450,-71.630562",
-  },
-  {
-    title: "Caracas",
-    location_type: "City",
-    woeid: 395269,
-    latt_long: "10.496050,-66.898277",
-  },
-  {
-    title: "Charleston",
-    location_type: "City",
-    woeid: 2378319,
-    latt_long: "32.781151,-79.931602",
-  },
-  {
-    title: "Santander",
-    location_type: "City",
-    woeid: 773964,
-    latt_long: "43.461498,-3.810010",
-  },
-  {
-    title: "Bordeaux",
-    location_type: "City",
-    woeid: 580778,
-    latt_long: "44.836632,-0.581050",
-  },
-  {
-    title: "Wuhan",
-    location_type: "City",
-    woeid: 2163866,
-    latt_long: "30.572399,114.279121",
-  },
-  {
-    title: "Marseille",
-    location_type: "City",
-    woeid: 610264,
-    latt_long: "43.293701,5.372470",
-  },
-  {
-    title: "Ahmedabad",
-    location_type: "City",
-    woeid: 2295402,
-    latt_long: "23.030199,72.569870",
-  },
-  {
-    title: "Lahore",
-    location_type: "City",
-    woeid: 2211177,
-    latt_long: "31.549910,74.327301",
-  },
-  {
-    title: "Belfast",
-    location_type: "City",
-    woeid: 44544,
-    latt_long: "54.595291,-5.934520",
-  },
-  {
-    title: "Fargo",
-    location_type: "City",
-    woeid: 2402292,
-    latt_long: "46.875912,-96.781761",
-  },
-  {
-    title: "Sendai",
-    location_type: "City",
-    woeid: 1118129,
-    latt_long: "38.314362,140.758194",
-  },
-  {
-    title: "Sunderland",
-    location_type: "City",
-    woeid: 36615,
-    latt_long: "54.900120,-1.408480",
-  },
-  {
-    title: "Palm Springs",
-    location_type: "City",
-    woeid: 2467696,
-    latt_long: "33.801559,-116.538193",
-  },
-  {
-    title: "Stuttgart",
-    location_type: "City",
-    woeid: 698064,
-    latt_long: "48.767670,9.171920",
-  },
-  {
-    title: "Hanover",
-    location_type: "City",
-    woeid: 657169,
-    latt_long: "52.372269,9.73815",
-  },
-  {
-    title: "Salvador",
-    location_type: "City",
-    woeid: 455826,
-    latt_long: "-12.97002,-38.504559",
-  },
-  {
-    title: "Lake Tahoe",
-    location_type: "City",
-    woeid: 23511744,
-    latt_long: "39.021400,-120.044823",
-  },
-  {
-    title: "Mountain View",
-    location_type: "City",
-    woeid: 2455920,
-    latt_long: "37.39999,-122.079552",
-  },
-  {
-    title: "Kawasaki",
-    location_type: "City",
-    woeid: 1117502,
-    latt_long: "35.556332,139.675201",
-  },
-  {
-    title: "Hangzhou",
-    location_type: "City",
-    woeid: 2132574,
-    latt_long: "30.252501,120.165024",
-  },
-  {
-    title: "Blackpool",
-    location_type: "City",
-    woeid: 12903,
-    latt_long: "53.825069,-3.020750",
-  },
-  {
-    title: "Yangon",
-    location_type: "City",
-    woeid: 1015662,
-    latt_long: "16.803890,96.154694",
-  },
-  {
-    title: "Bakersfield",
-    location_type: "City",
-    woeid: 2358492,
-    latt_long: "35.351189,-119.024063",
-  },
-  {
-    title: "Salt Lake City",
-    location_type: "City",
-    woeid: 2487610,
-    latt_long: "40.759499,-111.888229",
-  },
-  {
-    title: "Geneva",
-    location_type: "City",
-    woeid: 782538,
-    latt_long: "46.208351,6.142700",
-  },
-  {
-    title: "Portland",
-    location_type: "City",
-    woeid: 2475688,
-    latt_long: "43.666667,-70.266667",
-  },
-  {
-    title: "Reading",
-    location_type: "City",
-    woeid: 32997,
-    latt_long: "51.452381,-0.996030",
-  },
-  {
-    title: "Durban",
-    location_type: "City",
-    woeid: 1580913,
-    latt_long: "-29.855721,31.035110",
-  },
-  {
-    title: "Saitama",
-    location_type: "City",
-    woeid: 1116753,
-    latt_long: "35.915611,139.651657",
-  },
-  {
-    title: "Ajaccio",
-    location_type: "City",
-    woeid: 575627,
-    latt_long: "41.927311,8.74039",
-  },
-  {
-    title: "Mombasa",
-    location_type: "City",
-    woeid: 1528335,
-    latt_long: "-4.053050,39.672852",
-  },
-  {
-    title: "Chennai",
-    location_type: "City",
-    woeid: 2295424,
-    latt_long: "13.05939,80.245667",
-  },
-  {
-    title: "Kharkiv",
-    location_type: "City",
-    woeid: 922137,
-    latt_long: "49.990101,36.230301",
-  },
-  {
-    title: "Taipei",
-    location_type: "City",
-    woeid: 2306179,
-    latt_long: "25.085960,121.561478",
-  },
-  {
-    title: "Aberdeen",
-    location_type: "City",
-    woeid: 10243,
-    latt_long: "57.153820,-2.106790",
-  },
-  {
-    title: "Oakland",
-    location_type: "City",
-    woeid: 2463583,
-    latt_long: "37.80508,-122.273071",
-  },
-  {
-    title: "Sapporo",
-    location_type: "City",
-    woeid: 1118108,
-    latt_long: "42.985321,141.248062",
-  },
-  {
-    title: "Surat",
-    location_type: "City",
-    woeid: 2295405,
-    latt_long: "21.165131,72.836182",
-  },
-  {
-    title: "Busan",
-    location_type: "City",
-    woeid: 1132447,
-    latt_long: "35.170429,128.999481",
-  },
-  {
-    title: "Manchester",
-    location_type: "City",
-    woeid: 2444674,
-    latt_long: "42.990833,-71.463611",
-  },
-  {
-    title: "Hiroshima",
-    location_type: "City",
-    woeid: 1117227,
-    latt_long: "34.479988,132.437363",
-  },
-  {
-    title: "Northampton",
-    location_type: "City",
-    woeid: 30599,
-    latt_long: "52.244869,-0.886160",
-  },
-  {
-    title: "Southend-on-Sea",
-    location_type: "City",
-    woeid: 35375,
-    latt_long: "51.548328,0.706400",
-  },
-  {
-    title: "The Hague",
-    location_type: "City",
-    woeid: 726874,
-    latt_long: "52.083988,4.31741",
-  },
-  {
-    title: "Salford",
-    location_type: "City",
-    woeid: 33887,
-    latt_long: "53.489731,-2.2843",
-  },
-  {
-    title: "Kirkwall",
-    location_type: "City",
-    woeid: 25462,
-    latt_long: "58.981731,-2.96042",
-  },
-  {
-    title: "Swansea",
-    location_type: "City",
-    woeid: 36758,
-    latt_long: "51.623150,-3.940930",
-  },
-  {
-    title: "Penzance",
-    location_type: "City",
-    woeid: 31889,
-    latt_long: "50.11861,-5.53723",
-  },
-  {
-    title: "Ibadan",
-    location_type: "City",
-    woeid: 1393672,
-    latt_long: "7.378840,3.895270",
-  },
-  {
-    title: "Alexandria",
-    location_type: "City",
-    woeid: 1522006,
-    latt_long: "31.210489, 29.912430",
-  },
-  {
-    title: "Newcastle",
-    location_type: "City",
-    woeid: 30079,
-    latt_long: "54.977940,-1.611620",
-  },
-  {
-    title: "Jackson",
-    location_type: "City",
-    woeid: 2428184,
-    latt_long: "32.298691,-90.180489",
-  },
-  {
-    title: "Sioux Falls",
-    location_type: "City",
-    woeid: 2494126,
-    latt_long: "43.545349,-96.731277",
-  },
-  {
-    title: "Nagoya",
-    location_type: "City",
-    woeid: 1117817,
-    latt_long: "35.149860,136.926224",
-  },
-  {
-    title: "Brasília",
-    location_type: "City",
-    woeid: 455819,
-    latt_long: "-15.77846,-47.928661",
-  },
-  {
-    title: "Kano",
-    location_type: "City",
-    woeid: 1396803,
-    latt_long: "11.988800,8.522990",
-  },
-  {
-    title: "Kitakyushu",
-    location_type: "City",
-    woeid: 1110809,
-    latt_long: "33.845470,130.848557",
-  },
-  {
-    title: "Denpasar",
-    location_type: "City",
-    woeid: 1047372,
-    latt_long: "-8.662690,115.215492",
-  },
-  {
-    title: "Minneapolis",
-    location_type: "City",
-    woeid: 2452078,
-    latt_long: "44.979031,-93.264931",
-  },
-  {
-    title: "Frankfurt",
-    location_type: "City",
-    woeid: 650272,
-    latt_long: "50.112080,8.683410",
-  },
-  {
-    title: "Falmouth",
-    location_type: "City",
-    woeid: 19894,
-    latt_long: "50.151001,-5.07832",
-  },
-  {
-    title: "Fukuoka",
-    location_type: "City",
-    woeid: 1117099,
-    latt_long: "33.568699,130.346359",
-  },
-  {
-    title: "Newark",
-    location_type: "City",
-    woeid: 2459269,
-    latt_long: "40.731972,-74.174179",
-  },
-  {
-    title: "Manukau",
-    location_type: "City",
-    woeid: 2349386,
-    latt_long: "-36.98967,174.881454",
-  },
-  {
-    title: "Abidjan",
-    location_type: "City",
-    woeid: 1339615,
-    latt_long: "5.323390,-4.026270",
-  },
-  {
-    title: "Calvi",
-    location_type: "City",
-    woeid: 582723,
-    latt_long: "42.5578,8.75379",
-  },
-  {
-    title: "Santa Cruz de Tenerife",
-    location_type: "City",
-    woeid: 773692,
-    latt_long: "28.46163,-16.267059",
-  },
-  {
-    title: "Kuala Lumpur",
-    location_type: "City",
-    woeid: 1154781,
-    latt_long: "3.152480,101.717270",
-  },
-  {
-    title: "Santa Fe",
-    location_type: "City",
-    woeid: 2488867,
-    latt_long: "35.666431,-105.972572",
-  },
-  {
-    title: "Nottingham",
-    location_type: "City",
-    woeid: 30720,
-    latt_long: "52.949219,-1.143920",
-  },
-  {
-    title: "Wolverhampton",
-    location_type: "City",
-    woeid: 40859,
-    latt_long: "52.588638,-2.12168",
-  },
-  {
-    title: "Cape Town",
-    location_type: "City",
-    woeid: 1591691,
-    latt_long: "-33.919060,18.421961",
-  },
-  {
-    title: "Columbia",
-    location_type: "City",
-    woeid: 2383552,
-    latt_long: "34.000833,-81.035278",
-  },
-];
 
 export default App;
